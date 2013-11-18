@@ -1,12 +1,12 @@
-#The project name is the subdirectory name
-dirName:=exampleThengaBuild
-jobs:=2
+dirName		:=exampleThengaBuild #The project name is the subdirectory name
+jobs		:=2                  #build jobs
+prettyflg	:=1                  #custom compile/link messages 
 
+#build
 debug:
-	cd ..;scons -Q -j$(jobs) dir=$(dirName) buildmode=debug
+	cd ..;scons -Q -j$(jobs) printpretty=$(prettyflg) dir=$(dirName) buildmode=debug
 release:
-	cd ..;scons -Q -j$(jobs) dir=$(dirName) buildmode=release
-
+	cd ..;scons -Q -j$(jobs) printpretty=$(prettyflg) dir=$(dirName) buildmode=release
 
 #cleaning
 cleandebug:

@@ -1,16 +1,18 @@
 #The root Makefile
-jobs:=2
+
+jobs:=2       #build threads
+prettyflg:=1  #print custom build messages
 
 debug:
-	scons -Q -j$(jobs) buildmode=debug
+	scons -Q -j$(jobs) printpretty=$(prettyflg) buildmode=debug 
 release:
-	scons -Q -j$(jobs) buildmode=release
+	scons -Q -j$(jobs) printpretty=$(prettyflg) buildmode=release
 #example
 relO2:
-	scons -Q -j$(jobs) buildmode=relO2
+	scons -Q -j$(jobs) printpretty=$(prettyflg) buildmode=relO2
 all:
-	scons -Q -j$(jobs) buildmode=debug
-	scons -Q -j$(jobs) buildmode=release
+	scons -Q -j$(jobs) printpretty=$(prettyflg) buildmode=debug
+	scons -Q -j$(jobs) printpretty=$(prettyflg) buildmode=release
 	
 #cleaning
 cleandebug:

@@ -82,6 +82,7 @@ class ThengaBldVars:
                               'relO2'   : ['-O2', '-Wall'] 
                             }
     ARGNAME_PROJECT       = 'dir'                      #name of the second argument passed 
+    ARGNAME_CUST_MSG      = 'printpretty'
     DEFAULT_BUILD_MODE    = 'debug'                    #default build modes 
     BUILD_OBJECTS_PREFIX  = '../.objects_'             #Location of intermediate objects files.Relative path from a project/subdir
     TARGET_DIR_PREFIX     = '../bin'                   #Final target location for binaries,libs etc. -do-
@@ -155,7 +156,7 @@ class ThengaBuilder:
   def __getSconscriptPath(self, project):
     return project + '/' + ThengaBldVars.SCONSCRIPT_FILE
 
-  def __compileAndBuild(self, cola, project, filelist, buildType):
+  def __build(self, cola, project, filelist, buildType):
     #The Build and Taget dirs
     buildroot  = ThengaBldVars.BUILD_OBJECTS_PREFIX + ola.bld.buildMode
     builddir   = buildroot + '/' + project
@@ -189,7 +190,8 @@ class ThengaBuilder:
         self.tPrinter.printTError('*** invalid binary type ***')
         
     ola.Alias('all', prog)
-
+  
+  #helper func
   def getFiles(self, patternList, relPath=None):
       fullList = []
       if relPath is None:
@@ -206,16 +208,16 @@ class ThengaBuilder:
       SConscript(self.__getSconscriptPath(project))
 
   def buildExecutable(self, cola, project, filelist=None):
-      self.__compileAndBuild( cola, project, filelist, ThengaBuildTypes.executable )
+      self.__build( cola, project, filelist, ThengaBuildTypes.executable )
 
   def buildLibrary(self, cola, project, filelist=None):
-      self.__compileAndBuild( cola, project, filelist, ThengaBuildTypes.library )
+      self.__build( cola, project, filelist, ThengaBuildTypes.library )
 
   def buildDynamicLibrary(self, cola, project, filelist=None):
-      self.__compileAndBuild( cola, project, filelist, ThengaBuildTypes.dynamicLibrary )
+      self.__build( cola, project, filelist, ThengaBuildTypes.dynamicLibrary )
 
   def buildStaticLib(self, cola, project, filelist=None):
-      self.__compileAndBuild( cola, project, filelist, ThengaBuildTypes.staticLibrary )
+      self.__build( cola, project, filelist, ThengaBuildTypes.staticLibrary )
 
   def appendLibs(self, cola, libList):
       cola.AppendUnique(LIBS = libList)
@@ -242,13 +244,15 @@ class ThengaBuildMgr:
       for line in fPlist:
         prjList.append(line.rstrip('\r\n'))
     
-  def startThengaBulid(self, useCustomeCompileMessages):
+  def startThengaBulid(self):
     ola.bld = ThengaBuilder()
     ola.bld.buildMode = ARGUMENTS.get(ThengaBldVars.ARGNAME_MAKE_VAR, ThengaBldVars.DEFAULT_BUILD_MODE)
     singleProj = ARGUMENTS.get(ThengaBldVars.ARGNAME_PROJECT, ' ')
 
+    
     tCust = ThengaCustom()
-    if useCustomeCompileMessages:
+    useCustomeCompileMessages = ARGUMENTS.get(ThengaBldVars.ARGNAME_CUST_MSG, "1")
+    if useCustomeCompileMessages == "1":
       tCust.setThengaBuildMessages(ola)
 
     if not (ThengaBldVars.BUILD_MODE_N_FLAGS.has_key(ola.bld.buildMode)):
@@ -272,4 +276,4 @@ class ThengaBuildMgr:
 ola = Environment()
 ola.SConsignFile()
 tBuildMgr = ThengaBuildMgr()
-tBuildMgr.startThengaBulid(True) #pass in False to see the orig compile and link messages
+tBuildMgr.startThengaBulid()
