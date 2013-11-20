@@ -157,14 +157,14 @@ class ThengaBuilder:
     return project + '/' + ThengaBldVars.SCONSCRIPT_FILE
 
   def __build(self, cola, project, filelist, buildType):
-    #The Build and Taget dirs
+    #construct the paths
     buildroot  = ThengaBldVars.BUILD_OBJECTS_PREFIX + ola.bld.buildMode
     builddir   = buildroot + '/' + project
     targetpath = ThengaBldVars.TARGET_DIR_PREFIX + '/' + ola.bld.buildMode + '/' + project
     generatedLibPath = ThengaBldVars.TARGET_DIR_PREFIX + '/' + ola.bld.buildMode + '/'
 
     if filelist is None: 
-      filelist = self.GetFiles(ThengaBldVars.DEFAULT_SRC_EXT)
+      filelist = self.getFiles(ThengaBldVars.DEFAULT_SRC_EXT) #call the helper func
    
     self.appendIncludePaths(cola, ThengaBldVars.DEFAULT_INC_DIR)
     self.appendLibPaths(cola, ThengaBldVars.DEFAULT_LIB_DIR)
