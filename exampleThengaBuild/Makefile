@@ -1,6 +1,6 @@
-dirName		:=exampleThengaBuild #The project name is the subdirectory name
-jobs		:=2                  #build jobs
-prettyflg	:=1                  #custom compile/link messages 
+dirName:=exampleThengaBuild #The project name is the subdirectory name
+jobs:=2                     #build jobs
+prettyflg:=1                #custom compile/link messages 
 
 #build
 debug:
@@ -10,9 +10,9 @@ release:
 
 #cleaning
 cleandebug:
-	scons -Q --clean dir=$(dirName) buildmode=debug
+	cd ..; scons -Q --clean dir=$(dirName) buildmode=debug
 cleanrealease:	
-	scons -Q --clean dir=$(dirName) buildmode=release
+	cd ..; scons -Q --clean dir=$(dirName) buildmode=release
 clean:
-	scons -Q --clean dir=$(dirName) buildmode=debug
-	scons -Q --clean dir=$(dirName) buildmode=release	
+	cd ..; scons -Q --clean dir=$(dirName) buildmode=debug
+	cd ..; scons -Q --clean dir=$(dirName) buildmode=release	
