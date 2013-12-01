@@ -47,7 +47,6 @@ int main()
 
   cout << "obj3:" << obj3.a1 << " "<< obj3.a2 << " " << obj3.a3 << "\n";
   cout << "obj4:" << obj4.a1 << " "<< obj4.a2 << " " << obj4.a3 << "\n";
-  cout << sizeof(a) << " " << std::get<1>(diffTup1) << endl;
 
   return 0;
 }

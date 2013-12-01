@@ -1,12 +1,31 @@
-/*!
- * Fixed Size object bitstream diff.
- * Create a bitstream diff from fixed size objects(of same type:)). Also construct
- * them back.
+/*! \brief Byte diff creator for Fixed Size Objects.
+ *
  * Use cases:
- * 1. We want to save space on the medium (disk, network etc) while serializing large structures,
- *    arrays, array of large constant size object etc. Note: The sizes should be known during complile time.
- * 2. Want a quick and a superfast way to compute diffs for some good reason.
- */
+ * ----------
+ * If we have some objects ObjX,ObjX',ObjX''... [of same type and fixed size(known at compile time) ]
+ * then this could be useful if:
+ *  1. want a superfast way to get object diffs and reconstruct them back - for some good reason.
+ *  2. want to reduce the size of the objects before applying some standard compression.
+ * If objects are related and only few bytes differ then its a very good case and
+ * actually a very high compression ratio can be achieved.
+ *
+ * Example:
+ * --------
+ * compress/src/testfszd.cpp
+ *
+ * Internal rep:
+ * ------------
+ * +---------------------------------------+
+ * |  <-- bitheader-->|                    |
+ * |  <F><----DBF---->|<--diff bytes-->    |
+ * |   _  _         _ |+--------------+    |
+ * |  |_||_|.......|_||| ............ |    |
+ * |                  |+--------------+    |
+ * |  F  :- Full object bit flag.          |
+ * |  DBF:- Bit flag index of diff bytes   |
+ * +---------------------------------------+
+ *
+*/
 
 #ifndef FSZDIFF_H_
 #define FSZDIFF_H_
@@ -18,29 +37,34 @@
 
 namespace thenga
 {
-  /*\breif Fixed Size object bitstream diff
-   * @tparam Type
+  /*!
+   * @tparam T, T should be of fixed size (the size if known at compile time)
    */
   template <typename T>
   class FSzDiff
   {
     static const size_t fzMaxSize  = sizeof(T) * 2;
-    static const size_t numFlags = 1; //atm, lets have one bit flag
-    static const size_t numElements = sizeof(T) / sizeof(char); //no of bits for T
-    static const size_t totalHeaderBits = numFlags + numElements;
+    static const size_t numExistFlags = 1;
+    static const size_t numElements = sizeof(T);
+    static const size_t totalHeaderBits = numExistFlags + numElements;
+
     static constexpr size_t computebytesForHeader()
     {
       return (totalHeaderBits / 8) + (totalHeaderBits % 8 == 0 ? 0 : 1);
     }
+
     static const size_t headerByteCount = computebytesForHeader();
 
 
   public:
     /*!
-     * @param [in] pRefObj , the pointer to a reference object against which currObj will be compared
-     * @param [in] currObj, the second object, we wan't to see what bits changed here
-     * @param [out] diffResult, the result buffer
-     * @param [out] diffLength, size of the result buffer
+     * Construct a diffbuffer
+     * @param [in] pRefObj , the pointer to a reference object against which currObj will be compared.
+     *   pRefObj can be nullptr (this usually will be the case for the first call as our ref
+     *   object will the currObj)
+     * @param [in] currObj, the second object: this object will be converted to a diffbuffer.
+     *
+     * @return tuple [ <0>diffbuffer <1>length of diffbuffer ]
      */
     std::tuple<char*, size_t> getDiff(const T* pRefObj, const T& currObj)
     {
@@ -57,9 +81,9 @@ namespace thenga
       return(std::make_tuple(fzDiffBuffer, fzDiffLength));
     }
     /*!
-     * @param [in] refObj, T ptr
+     * Reconstruct the object from the diffBuffer
+     * @param [in] refObj, pointer to T object, for initial object this would be nullptr and
      * @param [in] diffBuffer
-     * @param [in] diffLength
      * @param [out] fillObj
      * throws std::string
      */
@@ -101,23 +125,32 @@ namespace thenga
       }
     }
     /*!
-     * test functions
+     * test function - get the bytes required by header
      */
     size_t testGetHeaderByteCount()
     {
       return headerByteCount;
     }
+    /*!
+     * test function - print the bit header
+     */
     void testPrintBitHeader()
     {
       printBitStream(fzDiffBuffer,headerByteCount);
     }
+  private:
 
-    void printBitStream(char* in, size_t len)
+    /*!
+     * Print the bits in the input buffer
+     * @param [in] inBuff
+     * @param [in] len
+     */
+    void printBitStream(const char* inBuff, size_t len)
     {
       for(size_t i = 0; i < len; i++)
       {
         std::cout << "[" << i << "]";
-        char curr = in[i];
+        char curr = inBuff[i];
         for(int b = 7; b >= 0 ; --b)
         {
           std::cout << (curr & (0x01 << b) ? "1" : "0");
@@ -126,16 +159,16 @@ namespace thenga
       std::cout << "\n";
     }
 
-
-  private:
     /*!
+     * Set the Full object flag
      * @param [in] refAvailable
      */
     void setFullObject(bool refAvailable)
     {
-      fzDiffBuffer[0] = (refAvailable << 7); //set bit:1 on/off,others off
+      fzDiffBuffer[0] = (refAvailable << 7);
     }
     /*!
+     * Check if the Full object flag is set
      * @param [in] buffer
      */
     bool isFullObject(const char* buffer)
@@ -160,6 +193,7 @@ namespace thenga
       }
     }
     /*!
+     * copy the Full Object
      * @param [in] currObj
      */
     void doCopy(const T& currObj)
@@ -169,6 +203,7 @@ namespace thenga
       fzDiffLength = sizeof(T) + 1;
     }
     /*!
+     * The main diff method
      * @param [in] refObj
      * @param [in] currObj
      */
