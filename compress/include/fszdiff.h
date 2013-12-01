@@ -3,7 +3,7 @@
  * Use cases:
  * ----------
  * If we have some objects ObjX,ObjX',ObjX''... [of same type and fixed size(known at compile time) ]
- * then this could be useful if:
+ * then this could be useful if we:
  *  1. want a superfast way to get object diffs and reconstruct them back - for some good reason.
  *  2. want to reduce the size of the objects before applying some standard compression.
  * If objects are related and only few bytes differ then its a very good case and
